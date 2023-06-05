@@ -25,10 +25,10 @@ class KrampSpider(Spider):
         #                   'name': 'Bio-energy Parts',
         #                   'parent': '',
         #                   'type': 'Category'}
-        self.root_item = {'id': 'web-119905618',
-                          'name': 'Electric motor',
-                          'parent': '',
-                          'type': 'Category'}
+        # self.root_item = {'id': 'web-119905618',
+        #                   'name': 'Electric motor',
+        #                   'parent': '',
+        #                   'type': 'Category'}
 
         self.headers = {
             'authority': 'www.kramp.com',
@@ -95,7 +95,7 @@ class KrampSpider(Spider):
                         yield self.query_category(c_id)
             else:
                 print("query products of {0}".format(result['data']['category']['id']))
-                yield self.query_products(result['data']['category']['id'])
+                # yield self.query_products(result['data']['category']['id'])
         except Exception as e:
             print("Could not parse item: {0}".format(e))
         return
