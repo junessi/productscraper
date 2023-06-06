@@ -25,8 +25,8 @@ class KrampSpider(Spider):
         #                   'name': 'Bio-energy Parts',
         #                   'parent': '',
         #                   'type': 'Category'}
-        # self.root_item = {'id': 'web-119905618',
-        #                   'name': 'Electric motor',
+        # self.root_item = {'id': 'web3-113239246',
+        #                   'name': 'Grain storage',
         #                   'parent': '',
         #                   'type': 'Category'}
 
@@ -119,6 +119,22 @@ class KrampSpider(Spider):
         if page < total_pages:
             yield self.query_products(category['id'], page + 1)
 
+    def parse_child_categories(self, response):
+        result = json.loads(response.text)
+        category = result['data']['category']
+        child_categories = category["childCategories"]
+
+        if len(child_categories):
+            for cc in child_categories:
+                product_item = ProductItem()
+                product_item['id'] = cc['id']
+                product_item['name'] = cc['name']
+                product_item['parent'] = category['id']
+                product_item['type'] = 'Category'
+                yield ItemLoader(item = product_item).load_item()
+        else:
+            yield self.query_products(category['id'])
+
     def query_category(self, category_id):
         graphql_query = {
             "operationName": "ProductFacets",
@@ -165,3 +181,18 @@ class KrampSpider(Spider):
                            data = graphql_query,
                            meta = meta,
                            callback = self.parse_products)
+
+    def query_child_categories(self, category_id):
+        graphql_query = {
+            "operationName": "GetChildCategories",
+            "query": "query GetChildCategories($id: ID!) {\n  category(id: $id) {\n    id\n    name\n    childCategories {\n      id\n      name\n      image {\n        src\n        alt\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}",
+            "variables": {"id": "{0}".format(category_id)}
+        }
+
+        meta = {'category_id': "{0}".format(category_id)}
+
+        return JsonRequest(url = self.graphql_url,
+                           headers = self.headers,
+                           data = graphql_query,
+                           meta = meta,
+                           callback = self.parse_child_categories)
