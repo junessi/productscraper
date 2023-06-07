@@ -1,6 +1,7 @@
 from datetime import datetime
 import threading
 import json
+import copy
 
 class ProductsPipeline(object):
     def __init__(self):
@@ -40,16 +41,18 @@ class ProductsPipeline(object):
                 self.items[item_parent]['categories'].append(item_id)
             elif item_type == 'Product':
                 if item_parent not in self.items:
+                    # this is only for root category
                     self.items[item_parent] = {'name': '', 'id': item_parent, 'parent': '', 'type': 'Category'}
 
                 if 'products' not in self.items[item_parent]:
-                    self.items[item_parent]['products'] = {}
+                    self.items[item_parent]['products'] = []
 
                 item_brand = item['brand'][0]
-                if item_brand and item_brand not in self.items[item_parent]['products']:
-                    self.items[item_parent]['products'][item_brand] = []
-
-                self.items[item_parent]['products'][item_brand].append({'id': item_id, 'name': item_name, 'parent': item_parent, 'type': 'Product', 'brand': item_brand})
+                self.items[item_parent]['products'].append({'id': item_id,
+                                                            'name': item_name,
+                                                            'parent': item_parent,
+                                                            'type': 'Product',
+                                                            'brand': item_brand})
 
         return item
 
@@ -58,21 +61,27 @@ class ProductsPipeline(object):
         print("duration: {0}".format(end_time - self.start_time))
         with open("kramp.json", "w") as f:
             f.write(json.dumps(self.items))
-        self.print_item_tree(self.root_item_id)
+        self.save_as_csv(self.root_item_id)
 
-    def print_item_tree(self, item, depth = 0):
-        if item in self.items:
-            indent = ''
-            for i in range(0, depth):
-                indent = indent + ';'
-            print(indent + self.items[item]['name'])
 
-            if self.items[item]['type'] == 'Category':
-                if 'categories' in self.items[item]:
-                    for c in self.items[item]['categories']:
-                        self.print_item_tree(c, depth + 1)
-                elif 'products' in self.items[item]:
-                    for brand in self.items[item]['products']:
-                        print("{0};{1}".format(indent, brand))
-                        for product in self.items[item]['products'][brand]:
-                            print("{0};;{1} - {2}".format(indent, product['id'], product['name']))
+    def save_as_csv(self, root_item_id):
+        items = copy.deepcopy(self.items)
+        path = []
+        self.dfs(items, root_item_id, path)
+
+    def dfs(self, items, item_id, path):
+        path.append(items[item_id]['name'])
+        if len(items[item_id]["categories"]):
+            for child_id in items[item_id]["categories"]:
+                self.dfs(items, child_id, path)
+
+        else:
+            for p in items[item_id]["products"]:
+                line = ""
+                if len(path):
+                    line = ";".join(path) + ";"
+
+                line += "{0};{1};{2}".format(p['brand'], p['id'], p['name'])
+                print(line)
+
+        path.pop()

@@ -25,8 +25,12 @@ class KrampSpider(Spider):
         #                   'name': 'Bio-energy Parts',
         #                   'parent': '',
         #                   'type': 'Category'}
-        # self.root_item = {'id': 'web3-113239246',
-        #                   'name': 'Grain storage',
+        self.root_item = {'id': 'web3-113239246',
+                          'name': 'Grain storage',
+                          'parent': '',
+                          'type': 'Category'}
+        # self.root_item = {'id': 'web-119905618',
+        #                   'name': 'Electric Motor',
         #                   'parent': '',
         #                   'type': 'Category'}
 
@@ -62,9 +66,9 @@ class KrampSpider(Spider):
         return self.protocol + '://' + self.domain + path
 
     def start_requests(self):
-        yield self.query_category(self.root_item['id'])
+        yield self.query_child_categories(self.root_item['id'])
 
-    def parse_category(self, response):
+    def parse_products(self, response):
         try:
             parent_id = response.meta['category_id']
             result = json.loads(response.text)
@@ -92,7 +96,7 @@ class KrampSpider(Spider):
                         product_item['type'] = 'Category'
 
                         yield ItemLoader(item = product_item).load_item()
-                        yield self.query_category(c_id)
+                        yield self.query_category_products(c_id)
             else:
                 print("query products of {0}".format(result['data']['category']['id']))
                 # yield self.query_products(result['data']['category']['id'])
@@ -100,7 +104,7 @@ class KrampSpider(Spider):
             print("Could not parse item: {0}".format(e))
         return
 
-    def parse_products(self, response):
+    def parse_category_products(self, response):
         result = json.loads(response.text)
         category = result['data']['category']
         items = category['items']
@@ -114,10 +118,11 @@ class KrampSpider(Spider):
             product_item['parent'] = response.meta['category_id']
             product_item['type'] = 'Product'
             product_item['brand'] = product['brand']['name']
+            print("got item: {0}".format(product_item))
             yield ItemLoader(item = product_item).load_item()
 
         if page < total_pages:
-            yield self.query_products(category['id'], page + 1)
+            yield self.query_category_products(category['id'], page + 1)
 
     def parse_child_categories(self, response):
         result = json.loads(response.text)
@@ -132,8 +137,9 @@ class KrampSpider(Spider):
                 product_item['parent'] = category['id']
                 product_item['type'] = 'Category'
                 yield ItemLoader(item = product_item).load_item()
+                yield self.query_child_categories(cc['id'])
         else:
-            yield self.query_products(category['id'])
+            yield self.query_category_products(category['id'])
 
     def query_category(self, category_id):
         graphql_query = {
@@ -155,13 +161,13 @@ class KrampSpider(Spider):
                            headers = self.headers,
                            data = graphql_query,
                            meta = meta,
-                           callback = self.parse_category)
+                           callback = self.parse_category_products)
 
-    def query_products(self, category_id, page = 1, page_size = 60):
+    def query_category_products(self, category_id, page = 1, page_size = 60):
         graphql_query = {
             "operationName": "GetCategoryProducts",
             "variables": {
-                "categoryId": "web-120549986",
+                "categoryId": "{0}".format(category_id),
                 "isAuthenticated": False,
                 "pageSize": page_size,
                 "page": page,
@@ -180,7 +186,7 @@ class KrampSpider(Spider):
                            headers = self.headers,
                            data = graphql_query,
                            meta = meta,
-                           callback = self.parse_products)
+                           callback = self.parse_category_products)
 
     def query_child_categories(self, category_id):
         graphql_query = {
