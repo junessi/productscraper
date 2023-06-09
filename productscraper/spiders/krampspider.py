@@ -25,10 +25,10 @@ class KrampSpider(Spider):
         #                   'name': 'Bio-energy Parts',
         #                   'parent': '',
         #                   'type': 'Category'}
-        self.root_item = {'id': 'web3-113239246',
-                          'name': 'Grain storage',
-                          'parent': '',
-                          'type': 'Category'}
+        # self.root_item = {'id': 'web3-113239246',
+        #                   'name': 'Grain storage',
+        #                   'parent': '',
+        #                   'type': 'Category'}
         # self.root_item = {'id': 'web-119905618',
         #                   'name': 'Electric Motor',
         #                   'parent': '',
