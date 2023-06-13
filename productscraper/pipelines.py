@@ -69,21 +69,22 @@ class ProductsPipeline(object):
             self.dfs(f, self.items, root_item_id)
 
     def dfs(self, f_handle, items, item_id, path = []):
+        path.append(items[item_id]['name'])
+
         try:
-            path.append(items[item_id]['name'])
             if "categories" in items[item_id] and len(items[item_id]["categories"]):
                 for child_id in items[item_id]["categories"]:
                     self.dfs(f_handle, items, child_id, path)
 
             elif "products" in items[item_id] and len(items[item_id]["products"]):
                 for p in items[item_id]["products"]:
-                    line = ""
-                    if len(path):
-                        line = ";".join(path) + ";"
-
+                    line = ";".join(path) + ";" if len(path) else ""
                     line += "{0};{1};{2}".format(p['brand'], p['id'], p['name'])
                     nbytes = f_handle.write("{0}\n".format(line))
                     print("{0} bytes written".format(nbytes))
+            else:
+                print("skipped item:")
+                print(items[item_id])
         except Exception as e:
             print("Exception: {0}".format(e))
             print("Unable to process this item:")
