@@ -118,7 +118,7 @@ class KrampSpider(Spider):
             product_item['parent'] = response.meta['category_id']
             product_item['type'] = 'Product'
             product_item['brand'] = product['brand']['name']
-            print("got item: {0}".format(product_item))
+            # print("got item: {0}".format(product_item))
             yield ItemLoader(item = product_item).load_item()
 
         if page < total_pages:

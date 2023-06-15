@@ -1,7 +1,7 @@
 from datetime import datetime
 import threading
 import json
-import copy
+from . import utils
 
 class ProductsPipeline(object):
     def __init__(self):
@@ -59,13 +59,15 @@ class ProductsPipeline(object):
     def close_spider(self, spider):
         end_time = datetime.now()
         print("duration: {0}".format(end_time - self.start_time))
-        with open("kramp.json", "w") as f:
+        kramp_json_filename = "kramp_{0}.json".format(utils.get_yyyymmdd())
+        with open(kramp_json_filename, "w") as f:
             f.write(json.dumps(self.items))
         self.save_as_csv(self.root_item_id)
 
 
     def save_as_csv(self, root_item_id):
-        with open('kramp123.csv', "w") as f:
+        kramp_csv_filename = "kramp_{0}.csv".format(utils.get_yyyymmdd())
+        with open(kramp_csv_filename, "w") as f:
             self.dfs(f, self.items, root_item_id)
 
     def dfs(self, f_handle, items, item_id, path = []):
@@ -80,8 +82,8 @@ class ProductsPipeline(object):
                 for p in items[item_id]["products"]:
                     line = ";".join(path) + ";" if len(path) else ""
                     line += "{0};{1};{2}".format(p['brand'], p['id'], p['name'])
-                    nbytes = f_handle.write("{0}\n".format(line))
-                    print("{0} bytes written".format(nbytes))
+                    f_handle.write("{0}\n".format(line))
+                    # print("{0} bytes written".format(nbytes))
             else:
                 print("skipped item:")
                 print(items[item_id])
