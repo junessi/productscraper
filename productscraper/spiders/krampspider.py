@@ -112,14 +112,19 @@ class KrampSpider(Spider):
         total_pages = items['pagination']['totalPages']
 
         for product in items['items']:
-            product_item = ProductItem()
-            product_item['id'] = product['id']
-            product_item['name'] = product['name']
-            product_item['parent'] = response.meta['category_id']
-            product_item['type'] = 'Product'
-            product_item['brand'] = product['brand']['name']
-            # print("got item: {0}".format(product_item))
-            yield ItemLoader(item = product_item).load_item()
+            try:
+                product_item = ProductItem()
+                product_item['id'] = product['id']
+                product_item['name'] = product['name']
+                product_item['parent'] = response.meta['category_id']
+                product_item['type'] = 'Product'
+                product_item['brand'] = product['brand']['name'] if product['brand'] is not None else 'Unbranded'
+                # print("got item: {0}".format(product_item))
+                yield ItemLoader(item = product_item).load_item()
+            except Exception as e:
+                print("Exception: {0}".format(e))
+                print("Unable to process product:")
+                print(product)
 
         if page < total_pages:
             yield self.query_category_products(category['id'], page + 1)
