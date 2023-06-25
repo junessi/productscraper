@@ -10,6 +10,7 @@ class ProductsPipeline(object):
         self.items_mutex = threading.Lock()
 
         self.root_item_id = ''
+        self.start_time = datetime.now()
 
     def open_spider(self, spider):
         config = spider.config
@@ -57,5 +58,7 @@ class ProductsPipeline(object):
         return item
 
     def close_spider(self, spider):
+        end_time = datetime.now()
+        print("duration: {0}".format(end_time - self.start_time))
         ProductsDumper(spider.config, self.items).dump()
 

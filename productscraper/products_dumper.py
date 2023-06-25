@@ -1,24 +1,32 @@
 import json
-from datetime import datetime
+import tarfile
 from productscraper.configuration import Configuration
-from productscraper import utils
 
 class ProductsDumper:
     def __init__(self, config: Configuration, items: dict):
         self.config = config
         self.items = items
-        self.start_time = datetime.now()
 
     def dump(self):
-        end_time = datetime.now()
-        print("duration: {0}".format(end_time - self.start_time))
-        with open(self.config.to_json_file, "w") as f:
-            f.write(json.dumps(self.items))
-        self.save_as_csv(self.config.root_item['id'])
+        self.save_as_json()
+        self.save_as_csv()
 
-    def save_as_csv(self, root_item_id):
-        with open(self.config.to_csv_file, "w") as f:
-            self.dfs(f, self.items, root_item_id)
+    def save_as_json(self):
+        if len(self.config.to_json_file):
+            with open(self.config.to_json_file, "w") as f:
+                f.write(json.dumps(self.items))
+
+            with tarfile.open(self.config.to_json_file + ".tar.bz2", "w:bz2") as tar:
+                tar.add(self.config.to_json_file)
+
+
+    def save_as_csv(self):
+        if len(self.config.to_csv_file):
+            with open(self.config.to_csv_file, "w") as f:
+                self.dfs(f, self.items, self.config.root_item['id'])
+                
+            with tarfile.open(self.config.to_csv_file + ".tar.bz2", "w:bz2") as tar:
+                tar.add(self.config.to_csv_file)
 
     def dfs(self, f_handle, items, item_id, path = []):
         path.append(items[item_id]['name'])
