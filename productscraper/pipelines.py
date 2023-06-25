@@ -1,7 +1,7 @@
 from datetime import datetime
 import threading
-import json
-from . import utils
+from productscraper import utils
+from productscraper.products_dumper import ProductsDumper
 
 class ProductsPipeline(object):
     def __init__(self):
@@ -12,9 +12,9 @@ class ProductsPipeline(object):
         self.root_item_id = ''
 
     def open_spider(self, spider):
-        self.root_item_id = spider.root_item['id']
-        self.items = {self.root_item_id: spider.root_item}
-        self.start_time = datetime.now()
+        config = spider.config
+        root_item = config.root_item
+        self.items = {root_item['id']: root_item}
 
     def process_item(self, item, spider):
         with self.items_mutex:
@@ -57,39 +57,5 @@ class ProductsPipeline(object):
         return item
 
     def close_spider(self, spider):
-        end_time = datetime.now()
-        print("duration: {0}".format(end_time - self.start_time))
-        kramp_json_filename = "kramp_{0}.json".format(utils.get_yyyymmdd())
-        with open(kramp_json_filename, "w") as f:
-            f.write(json.dumps(self.items))
-        self.save_as_csv(self.root_item_id)
+        ProductsDumper(spider.config, self.items).dump()
 
-
-    def save_as_csv(self, root_item_id):
-        kramp_csv_filename = "kramp_{0}.csv".format(utils.get_yyyymmdd())
-        with open(kramp_csv_filename, "w") as f:
-            self.dfs(f, self.items, root_item_id)
-
-    def dfs(self, f_handle, items, item_id, path = []):
-        path.append(items[item_id]['name'])
-
-        try:
-            if "categories" in items[item_id] and len(items[item_id]["categories"]):
-                for child_id in items[item_id]["categories"]:
-                    self.dfs(f_handle, items, child_id, path)
-
-            elif "products" in items[item_id] and len(items[item_id]["products"]):
-                for p in items[item_id]["products"]:
-                    line = ";".join(path) + ";" if len(path) else ""
-                    line += "{0};{1};{2}".format(p['brand'], p['id'], p['name'])
-                    f_handle.write("{0}\n".format(line))
-                    # print("{0} bytes written".format(nbytes))
-            else:
-                print("skipped item:")
-                print(items[item_id])
-        except Exception as e:
-            print("Exception: {0}".format(e))
-            print("Unable to process this item:")
-            print(items[item_id])
-
-        path.pop()

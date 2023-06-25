@@ -4,6 +4,8 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.loader import ItemLoader
 from scrapy.linkextractors import LinkExtractor
 from productscraper.items import ProductItem
+from productscraper.configuration import Configuration
+from productscraper import utils
 from scrapy import Request, Spider
 from scrapy.http.request.json_request import JsonRequest
 import re
@@ -29,10 +31,14 @@ class KrampSpider(Spider):
         #                   'name': 'Grain storage',
         #                   'parent': '',
         #                   'type': 'Category'}
-        # self.root_item = {'id': 'web-119905618',
-        #                   'name': 'Electric Motor',
-        #                   'parent': '',
-        #                   'type': 'Category'}
+        self.root_item = {'id': 'web-119905618',
+                          'name': 'Electric Motor',
+                          'parent': '',
+                          'type': 'Category'}
+
+        self.config = Configuration(self.root_item,
+                                    "kramp_{0}.json".format(utils.get_yyyymmdd()),
+                                    "kramp_{0}.csv".format(utils.get_yyyymmdd()))
 
         self.headers = {
             'authority': 'www.kramp.com',
@@ -59,7 +65,9 @@ class KrampSpider(Spider):
                         'GDPR_COOKIES_ACCEPT':'STANDARD',
                         'ln_or': 'eyIxMjIzMTkzIjoiZCJ9'}
 
-        
+    def config(self):
+        return self.config
+
     def joinurl(self, path):
         self.protocol = 'https'
         self.domain = 'www.kramp.com'
