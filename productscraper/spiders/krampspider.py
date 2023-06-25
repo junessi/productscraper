@@ -31,10 +31,10 @@ class KrampSpider(Spider):
         #                   'name': 'Grain storage',
         #                   'parent': '',
         #                   'type': 'Category'}
-        self.root_item = {'id': 'web-119905618',
-                          'name': 'Electric Motor',
-                          'parent': '',
-                          'type': 'Category'}
+        # self.root_item = {'id': 'web-119905618',
+        #                   'name': 'Electric Motor',
+        #                   'parent': '',
+        #                   'type': 'Category'}
 
         self.config = Configuration(self.root_item,
                                     "kramp_{0}.json".format(utils.get_yyyymmdd()),
