@@ -1,3 +1,4 @@
+import os
 import json
 import tarfile
 from productscraper.configuration import Configuration
@@ -19,6 +20,7 @@ class ProductsDumper:
             with tarfile.open(self.config.to_json_file + ".tar.bz2", "w:bz2") as tar:
                 tar.add(self.config.to_json_file)
 
+            os.remove(self.config.to_json_file) # cleanup
 
     def save_as_csv(self):
         if len(self.config.to_csv_file):
@@ -27,6 +29,8 @@ class ProductsDumper:
                 
             with tarfile.open(self.config.to_csv_file + ".tar.bz2", "w:bz2") as tar:
                 tar.add(self.config.to_csv_file)
+
+            os.remove(self.config.to_csv_file) # cleanup
 
     def dfs(self, f_handle, items, item_id, path = []):
         path.append(items[item_id]['name'])

@@ -37,8 +37,8 @@ class KrampSpider(Spider):
         #                   'type': 'Category'}
 
         self.config = Configuration(self.root_item,
-                                    "kramp_{0}.json".format(utils.get_yyyymmdd()),
-                                    "kramp_{0}.csv".format(utils.get_yyyymmdd()))
+                                    # "kramp_{0}.json".format(utils.get_yyyymmdd()),
+                                    to_csv_file = "kramp_{0}.csv".format(utils.get_yyyymmdd()))
 
         self.headers = {
             'authority': 'www.kramp.com',
