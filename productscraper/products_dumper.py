@@ -24,13 +24,19 @@ class ProductsDumper:
 
     def save_as_csv(self):
         if len(self.config.to_csv_file):
-            with open(self.config.to_csv_file, "w") as f:
+            with open('unsorted.csv', "w") as f:
                 self.dfs(f, self.items, self.config.root_item['id'])
+
+            with open(self.config.to_csv_file, "w") as f_sorted, open('unsorted.csv', "r") as f_unsorted:
+                for l in sorted(f_unsorted.readlines()):
+                    f_sorted.write(l)
                 
             with tarfile.open(self.config.to_csv_file + ".tar.bz2", "w:bz2") as tar:
                 tar.add(self.config.to_csv_file)
 
-            os.remove(self.config.to_csv_file) # cleanup
+            # cleanup
+            os.remove(self.config.to_csv_file)
+            os.remove('unsorted.csv')
 
     def dfs(self, f_handle, items, item_id, path = []):
         path.append(items[item_id]['name'])
