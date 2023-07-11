@@ -14,28 +14,34 @@ class ProductsDumper:
 
     def save_as_json(self):
         if len(self.config.to_json_file):
-            with open(self.config.to_json_file, "w") as f:
+            file_full_path = "{0}/{1}/{2}".format(self.config.dump_directory,
+                                                  self.config.spider_name,
+                                                  self.config.to_json_file)
+            with open(file_full_path, "w") as f:
                 f.write(json.dumps(self.items))
 
-            with tarfile.open(self.config.to_json_file + ".tar.bz2", "w:bz2") as tar:
-                tar.add(self.config.to_json_file)
+            with tarfile.open(file_full_path + ".tar.bz2", "w:bz2") as tar:
+                tar.add(file_full_path, arcname = self.config.to_json_file)
 
-            os.remove(self.config.to_json_file) # cleanup
+            os.remove(file_full_path) # cleanup
 
     def save_as_csv(self):
         if len(self.config.to_csv_file):
+            file_full_path = "{0}/{1}/{2}".format(self.config.dump_directory,
+                                                  self.config.spider_name,
+                                                  self.config.to_csv_file)
             with open('unsorted.csv', "w") as f:
                 self.dfs(f, self.items, self.config.root_item['id'])
 
-            with open(self.config.to_csv_file, "w") as f_sorted, open('unsorted.csv', "r") as f_unsorted:
+            with open(file_full_path, "w") as f_sorted, open('unsorted.csv', "r") as f_unsorted:
                 for l in sorted(f_unsorted.readlines()):
                     f_sorted.write(l)
                 
-            with tarfile.open(self.config.to_csv_file + ".tar.bz2", "w:bz2") as tar:
-                tar.add(self.config.to_csv_file)
+            with tarfile.open(file_full_path + ".tar.bz2", "w:bz2") as tar:
+                tar.add(file_full_path, arcname = self.config.to_csv_file)
 
             # cleanup
-            os.remove(self.config.to_csv_file)
+            os.remove(file_full_path)
             os.remove('unsorted.csv')
 
     def dfs(self, f_handle, items, item_id, path = []):

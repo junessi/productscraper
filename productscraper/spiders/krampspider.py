@@ -4,13 +4,11 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.loader import ItemLoader
 from scrapy.linkextractors import LinkExtractor
 from productscraper.items import ProductItem
-from productscraper.configuration import Configuration
+from productscraper.configuration import Configuration, load_config
 from productscraper import utils
 from scrapy import Request, Spider
 from scrapy.http.request.json_request import JsonRequest
-import re
 import json
-import requests
 
 
 class KrampSpider(Spider):
@@ -19,10 +17,10 @@ class KrampSpider(Spider):
     def __init__(self):
         self.graphql_url = self.joinurl('/graphql/webshop')
 
-        self.root_item = {'id': 'web1-4045064',
-                          'name': 'Agriculture',
-                          'parent': '',
-                          'type': 'Category'}
+        # self.root_item = {'id': 'web1-4045064',
+        #                   'name': 'Agriculture',
+        #                   'parent': '',
+        #                   'type': 'Category'}
         # self.root_item = {'id': 'web2-4045765',
         #                   'name': 'Bio-energy Parts',
         #                   'parent': '',
@@ -36,9 +34,7 @@ class KrampSpider(Spider):
         #                   'parent': '',
         #                   'type': 'Category'}
 
-        self.config = Configuration(self.root_item,
-                                    # "kramp_{0}.json".format(utils.get_yyyymmdd()),
-                                    to_csv_file = "kramp_{0}.csv".format(utils.get_yyyymmdd()))
+        self.config = load_config("kramp")
 
         self.headers = {
             'authority': 'www.kramp.com',
@@ -74,7 +70,7 @@ class KrampSpider(Spider):
         return self.protocol + '://' + self.domain + path
 
     def start_requests(self):
-        yield self.query_child_categories(self.root_item['id'])
+        yield self.query_child_categories(self.config.root_item['id'])
 
     def parse_products(self, response):
         try:

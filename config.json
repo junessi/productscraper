@@ -1,0 +1,18 @@
+{
+    "dump_directory": "/home/junlin/products",
+    "spiders":
+    [
+        {
+            "name": "kramp",
+            "root_item":
+            {
+                "id": "web1-4045064",
+                "name": "Agriculture",
+                "parent": "",
+                "type": "Category"
+            },
+            "save_to_json_file": false,
+            "save_to_csv_file": true
+        }
+    ]
+}
